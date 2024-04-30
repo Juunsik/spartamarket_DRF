@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, AbstractUser
 
 
 # Create your models here.
@@ -27,12 +27,13 @@ class UserManager(BaseUserManager):
             nickname=nickname,
             birth=birth,
         )
-        user.is_admin = True
+        user.is_staff = True
+        user.is_superuser = True
         user.save(using=self.db)
         return user
 
 
-class User(AbstractBaseUser):
+class User(AbstractUser):
     GENDER_CHOICES = {
         ("N", "Undefined"),
         ("M", "Male"),
