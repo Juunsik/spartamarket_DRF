@@ -1,12 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, ProfileSerializer
 
 
 # Create your views here.
@@ -44,3 +45,14 @@ class LoginAPIView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+class ProfileAPIView(APIView):
+    permission_classes=[IsAuthenticated]
+    
+    def get_object(self, username):
+        return get_object_or_404(User, username=username)
+    
+    def get(self, request, username):
+        profile=self.get_object(username)
+        serializer=ProfileSerializer(profile)
+        return Response(serializer.data)
