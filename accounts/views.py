@@ -46,13 +46,27 @@ class LoginAPIView(APIView):
             status=status.HTTP_200_OK,
         )
 
-class ProfileAPIView(APIView):
+
+class LogoutAPIView(APIView):
     permission_classes=[IsAuthenticated]
     
+    def post(self, request):
+        token = RefreshToken(request.data.get("refresh"))
+        token.blacklist()
+        return Response({"ok":"Bye!"},status=status.HTTP_200_OK)
+
+
+class PasswordChangeAPIView(APIView):
+    pass
+
+
+class ProfileAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get_object(self, username):
         return get_object_or_404(User, username=username)
-    
+
     def get(self, request, username):
-        profile=self.get_object(username)
-        serializer=ProfileSerializer(profile)
+        profile = self.get_object(username)
+        serializer = ProfileSerializer(profile)
         return Response(serializer.data)
