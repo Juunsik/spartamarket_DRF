@@ -2,12 +2,13 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
 from .models import User
-from .serializers import UserSerializer, ProfileSerializer
+from .serializers import UserSerializer, ProfileSerializer, ProfileUpdateSerializer
+from .permissions import IsOwnerOrReadOnly
 
 
 # Create your views here.
@@ -48,12 +49,12 @@ class LoginAPIView(APIView):
 
 
 class LogoutAPIView(APIView):
-    permission_classes=[IsAuthenticated]
-    
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         token = RefreshToken(request.data.get("refresh"))
         token.blacklist()
-        return Response({"ok":"Bye!"},status=status.HTTP_200_OK)
+        return Response({"ok": "Bye!"}, status=status.HTTP_200_OK)
 
 
 class PasswordChangeAPIView(APIView):
@@ -61,12 +62,21 @@ class PasswordChangeAPIView(APIView):
 
 
 class ProfileAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsOwnerOrReadOnly]
 
     def get_object(self, username):
-        return get_object_or_404(User, username=username)
+        profile = get_object_or_404(User, username=username)
+        self.check_object_permissions(self.request, profile)
+        return profile
 
     def get(self, request, username):
         profile = self.get_object(username)
         serializer = ProfileSerializer(profile)
         return Response(serializer.data)
+
+    def put(self, request, username):
+        profile = self.get_object(username)
+        serializer = ProfileUpdateSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response(serializer.data)
