@@ -13,7 +13,26 @@ class UserSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = (
+        fields = (
             "id",
-            "password",
+            "date_joined",
+            "username",
+            "email",
+            "name",
+            "nickname",
+            "birth",
+            "gender",
+            "description",
+        )
+
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "name",
+            "nickname",
+            "birth",
+            "gender",
+            "description",
         )
