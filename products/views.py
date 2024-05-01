@@ -7,18 +7,28 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from .models import Product
 from .serializers import ProductSerializer
 from .permissions import IsOwnerOrReadOnly
+from .pagination import PaginationHandlerMixin
 
 
 # Create your views here.
-class ProductsAPIView(APIView):
+class ProductPagination(PageNumberPagination):
+    page_size=5
+
+class ProductsAPIView(APIView, PaginationHandlerMixin):
     permission_classes = [IsAuthenticatedOrReadOnly]
+    pagination_class=ProductPagination
 
     def get(self, request):
         products = Product.objects.all()
-        serializer = ProductSerializer(products, many=True)
+        page=self.paginate_queryset(products)
+        if page is not None:
+            serializer=self.get_paginated_response(ProductSerializer(page, many=True).data)
+        else:
+            serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
 
     def post(self, request):
