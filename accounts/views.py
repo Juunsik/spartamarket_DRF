@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.exceptions import ParseError
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import update_last_login
@@ -75,6 +76,8 @@ class ProfileAPIView(APIView):
         return Response(serializer.data)
 
     def put(self, request, username):
+        if request.data.get('email') in User.objects.values('email'):
+            raise ParseError('해당 이메일은 사용중입니다.')
         profile = self.get_object(username)
         serializer = ProfileUpdateSerializer(profile, data=request.data, partial=True)
         if serializer.is_valid(raise_exception=True):

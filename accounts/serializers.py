@@ -7,7 +7,18 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = "__all__"
+        fields = (
+            "id",
+            'password',
+            "date_joined",
+            "username",
+            "email",
+            "name",
+            "nickname",
+            "birth",
+            "gender",
+            "description",
+        )
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -30,6 +41,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            "email",
             "name",
             "nickname",
             "birth",
